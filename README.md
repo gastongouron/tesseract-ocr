@@ -19,3 +19,5 @@ rm -rf node_modules (yes, really D:)
 
 npm install opencv
 ```
+
+Run with `node t.js`
