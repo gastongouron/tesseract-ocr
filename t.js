@@ -50,7 +50,7 @@ cv.readImage('./regular.jpg', function(err, im) {
   console.log(height)
   if (width < 1 || height < 1) throw new Error('Image has no size (probably no image or wrong path)');
 
-  convertToTestFormats(im);
+  // convertToTestFormats(im);
 
   var out = new cv.Matrix(height, width);
   // im.convertGrayscale();
@@ -71,8 +71,7 @@ cv.readImage('./regular.jpg', function(err, im) {
   //   }
   // }
 
-  let largestArea = 500;
-  let largestAreaIndex;
+
   var arr = []
   // try different approach with controur data (prefered)
   for (i = 0; i < contours.size(); i++) {
@@ -96,14 +95,28 @@ cv.readImage('./regular.jpg', function(err, im) {
     let rect = contours.minAreaRect(i);
 
     for (let i = 0; i < 4; i++) {
-      im.line([rect.points[i].x, rect.points[i].y], [rect.points[(i+1)%4].x, rect.points[(i+1)%4].y], GREEN, 3);
+
+      var firstPointXcoord = rect.points[i].x
+      var firstPointYcoord = rect.points[i].y
+      var secondPointXcoord = rect.points[(i+1)%4].x
+      var secondPointYcoord = rect.points[(i+1)%4].y
+
+      // console.log(firstPointXcoord - secondPointXcoord)
+      if(Math.abs(secondPointXcoord - firstPointXcoord) > 100){
+      // console.log(firstPointYcoord)
+
+      // if((firstPointXcoord - secondPointXcoord)> 100){
+        im.line([0, firstPointYcoord], [width, secondPointYcoord], GREEN, 3);
+      }
+      // im.line([0, firstPointYcoord], [width, secondPointYcoord], GREEN, 3);
+      // im.line([firstPointXcoord, firstPointYcoord], [secondPointXcoord, secondPointYcoord], GREEN, 3);
       // console.log(i + ' -> ' + rect.points[i].x, rect.points[i].y, rect.points[(i+1)%4].x, rect.points[(i+1)%4].y)
     }
 
-    var p0x = rect.points[0].x > 0 ? rect.points[0].x : 0
-    var p0y = rect.points[0].y > 0 ? rect.points[0].y : 0
-    var p2x = rect.points[1].x > 0 ? rect.points[1].x : 0
-    var p2y = rect.points[1].y > 0 ? rect.points[1].y : 0
+    // var p0x = rect.points[0].x > 0 ? rect.points[0].x : 0
+    // var p0y = rect.points[0].y > 0 ? rect.points[0].y : 0
+    // var p2x = rect.points[1].x > 0 ? rect.points[1].x : 0
+    // var p2y = rect.points[1].y > 0 ? rect.points[1].y : 0
 
     // var newZero = lasty || 0
     // console.log('newzero is: ' + newZero)
@@ -116,10 +129,8 @@ cv.readImage('./regular.jpg', function(err, im) {
     // console.log(total)
     // console.log(arr)
 
-    img_crop = im.crop(0, height-p2y ,width, height-p0y)
-    img_crop.save('./'+i+'crop.png');
-
-
+    // img_crop = im.crop(0, height-p2y ,width, height-p0y)
+    // img_crop.save('./'+i+'crop.png');
 
     // var lasty = height-p0y
     // console.log(lasty)
