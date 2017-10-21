@@ -1,146 +1,131 @@
+var Jimp = require("jimp");
 const tesseract = require('node-tesseract');
 const cv = require('opencv');
 const fs = require('fs')
 
-// const tesseractOptions = {
-// 	l: 'eng',
-// 	psm: 4
-// };
-
-// tesseract.process(__dirname + './noam.png', tesseractOptions, function(err, text) {
-// 	if(err) {
-// 		console.error(err);
-// 	} else {
-// 		var logger = fs.createWriteStream(text+'.txt', {
-//   			flags: 'a'
-// 		})
-// 		console.log(text);
-// 		logger.write(text)
-// 		logger.end()
-// 	}
-// });
+////////////////////////////////////////////////////
 
 var lowThresh  = 0;
 var highThresh = 100;
 var nIters     = 2;
 var minArea    = 20000;
-
 var BLUE  = [255, 0, 0];
 var RED   = [0, 0, 255];
 var GREEN = [0, 255, 0];
 var WHITE = [255, 255, 255];
 
-var convertToTestFormats= function(im){
-  img_hsv = im.copy();
-  img_gray = im.copy();
-  img_hsv.convertHSVscale();
-  img_gray.convertGrayscale();
-  im.save('./nor.png');
-  img_hsv.save('./hsv.png');
-  img_gray.save('./gray.png');
-};
+////////////////////////////////////////////////////
 
-cv.readImage('./regular.jpg', function(err, im) {
-
-  if (err) throw err;
-
-  width = im.width()
-  height = im.height()
-  console.log(width)
-  console.log(height)
-  if (width < 1 || height < 1) throw new Error('Image has no size (probably no image or wrong path)');
-
-  // convertToTestFormats(im);
-
-  var out = new cv.Matrix(height, width);
-  // im.convertGrayscale();
-  im_canny = im.copy();
-  im_canny.canny(lowThresh, highThresh);
-  im_canny.dilate(nIters);
-
-  contours = im_canny.findContours();
-
-  var size = contours.size();
-
-  // Access vertex data of contours
-  // for(var c = 0; c < contours.size(); ++c) {
-  //   // console.log("Contour " + c);
-  //   for(var i = 0; i < contours.cornerCount(c); ++i) {
-  //     var point = contours.point(c, i);
-  //     // console.log("(" + point.x + "," + point.y + ")");
-  //   }
-  // }
-
-
-  var arr = []
-  // try different approach with controur data (prefered)
-  for (i = 0; i < contours.size(); i++) {
-
-    if (contours.area(i) < minArea) continue;
-    // contours.arcLength(i, true)
-
-    var arcLength = contours.arcLength(i, true);
-    contours.approxPolyDP(i, 0.01 * arcLength, true);
-    // console.log(contours.cornerCount(i));
-    if(contours.cornerCount(i) < 10) {
-
-    var points = [
-      contours.point(i, 0),
-      contours.point(i, 1)
-    ]
-
-    out.line([points[0].x,points[0].y], [points[1].x, points[1].y], RED);
-
-
-    let rect = contours.minAreaRect(i);
-
-    for (let i = 0; i < 4; i++) {
-
-      var firstPointXcoord = rect.points[i].x
-      var firstPointYcoord = rect.points[i].y
-      var secondPointXcoord = rect.points[(i+1)%4].x
-      var secondPointYcoord = rect.points[(i+1)%4].y
-
-      // console.log(firstPointXcoord - secondPointXcoord)
-      if(Math.abs(secondPointXcoord - firstPointXcoord) > 100){
-      // console.log(firstPointYcoord)
-
-      // if((firstPointXcoord - secondPointXcoord)> 100){
-        im.line([0, firstPointYcoord], [width, secondPointYcoord], GREEN, 3);
-      }
-      // im.line([0, firstPointYcoord], [width, secondPointYcoord], GREEN, 3);
-      // im.line([firstPointXcoord, firstPointYcoord], [secondPointXcoord, secondPointYcoord], GREEN, 3);
-      // console.log(i + ' -> ' + rect.points[i].x, rect.points[i].y, rect.points[(i+1)%4].x, rect.points[(i+1)%4].y)
-    }
-
-    // var p0x = rect.points[0].x > 0 ? rect.points[0].x : 0
-    // var p0y = rect.points[0].y > 0 ? rect.points[0].y : 0
-    // var p2x = rect.points[1].x > 0 ? rect.points[1].x : 0
-    // var p2y = rect.points[1].y > 0 ? rect.points[1].y : 0
-
-    // var newZero = lasty || 0
-    // console.log('newzero is: ' + newZero)
-    // console.log(['p0x: ' + p0x,'p0y: ' +  p0y,'p2x: ' +  p2x,'p2y: ' +  p2y])
-    // console.log([ 0, height-p2y ,width, height-p0y])
-
-    // arr.push(height-p0y)
-    // var total=0;
-    // for(var a in arr) { total += arr[a]; }
-    // console.log(total)
-    // console.log(arr)
-
-    // img_crop = im.crop(0, height-p2y ,width, height-p0y)
-    // img_crop.save('./'+i+'crop.png');
-
-    // var lasty = height-p0y
-    // console.log(lasty)
-    // img_crop.save('./crop'+i+'.png');
-    // im.drawContour(contours, i, RED);
-    out.drawContour(contours, i, WHITE);
-    }
-  }
-
-  im.save('./clear.png')
-  out.save('./ko.jpg');
-  console.log('Image saved as ko.jpg to local folder.png');
+Jimp.read("regular.jpg", function (err, regular) {
+   regular.normalize().brightness(0.3).contrast(0.00).write("img-copy.jpg", function(){
+     startProcedure()
+   });
 });
+
+var x = 0
+var y = 0
+var w = 0
+var h = 0
+
+var startProcedure = function(){
+  cv.readImage('./img-copy.jpg', function(err, im) {
+
+    if (err) throw err;
+
+    separatorStore = []
+    width = im.width()
+    height = im.height()
+
+    if (width < 1 || height < 1) throw new Error('Image has no size (probably no image or wrong path)');
+
+    var out = new cv.Matrix(height, width);
+    im_canny = im.copy();
+    im_canny.canny(lowThresh, highThresh);
+    im_canny.dilate(nIters);
+
+    contours = im_canny.findContours();
+
+    for (i = 0; i < contours.size(); i++) {
+      if (contours.area(i) < minArea) continue;
+
+      var arcLength = contours.arcLength(i, true);
+      contours.approxPolyDP(i, 0.01 * arcLength, true);
+
+      if(contours.cornerCount(i) < 10) {
+
+        let rect = contours.minAreaRect(i);
+
+        for (let k = 0; k < 4; k++) {
+
+          var x = rect.points[k].x
+          var y = rect.points[k].y
+          var secondPointXcoord = rect.points[(k+1)%4].x
+          var secondPointYcoord = rect.points[(k+1)%4].y
+
+          if(Math.abs(secondPointXcoord - x) > 100){
+            im.line([0, y], [width, y], RED, 5);
+            obj = {
+              x: 0,
+              y: Math.round(y),
+            }
+            separatorStore.push(obj)
+          }
+        }
+      }
+    }
+    separatorStore.sort(function(a, b){
+      return a.y - b.y;
+    });
+
+    var arrayLength = separatorStore.length;
+    for (var i = 0; i < arrayLength; i++) {
+      console.log(separatorStore[i])
+      console.log(separatorStore[i+1])
+      console.log(separatorStore[i]['y'])
+
+      // console.log(separatorStore[i-1])
+
+      if(separatorStore[i+1]){
+        y = separatorStore[i]['y']
+        y2 = separatorStore[i+1]['y'] - y
+        var crop = im.crop(0, y, width, y2);
+        crop.save('./'+ i +'cropped.png')
+      }else{
+        return
+      }
+
+      //   x = separatorStore[i-1]['x']
+      // }else{
+      //   x = 0
+      // };
+
+
+
+    }
+
+    // console.log(separatorStore)
+    // console.log(height)
+    im.save('./img-copy-processed.png')
+    console.log('Image saved as ko.jpg to local folder.png');
+  });
+}
+
+////////////////////////////////////////////////////
+
+// const tesseractOptions = {
+//  l: 'fra',
+//  psm: 4
+// };
+
+// tesseract.process(__dirname + './regular2.png', tesseractOptions, function(err, text) {
+//  if(err) {
+//    console.error(err);
+//  } else {
+//    var logger = fs.createWriteStream(text+'.txt', {
+//        flags: 'a'
+//    })
+//    console.log(text);
+//    logger.write(text)
+//    logger.end()
+//  }
+// });
