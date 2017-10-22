@@ -1,3 +1,4 @@
+
 var Jimp = require("jimp");
 const tesseract = require('node-tesseract');
 const cv = require('opencv');
@@ -16,8 +17,8 @@ var WHITE = [255, 255, 255];
 
 ////////////////////////////////////////////////////
 
-Jimp.read("regular.jpg", function (err, regular) {
-   regular.normalize().brightness(0.3).contrast(0.00).write("img-copy.jpg", function(){
+Jimp.read("newregular.jpg", function (err, regular) {
+   regular.rotate(0).normalize().brightness(0.3).contrast(0.00).write("img-copy.jpg", function(){
      startProcedure()
    });
 });
@@ -72,60 +73,55 @@ var startProcedure = function(){
           }
         }
       }
+      im.save('./img-copy-processed.png')
     }
+
     separatorStore.sort(function(a, b){
       return a.y - b.y;
     });
 
     var arrayLength = separatorStore.length;
+
     for (var i = 0; i < arrayLength; i++) {
-      console.log(separatorStore[i])
-      console.log(separatorStore[i+1])
-      console.log(separatorStore[i]['y'])
-
-      // console.log(separatorStore[i-1])
-
       if(separatorStore[i+1]){
         y = separatorStore[i]['y']
         y2 = separatorStore[i+1]['y'] - y
+        // handle small books like if y2 < ...
         var crop = im.crop(0, y, width, y2);
-        crop.save('./'+ i +'cropped.png')
-      }else{
-        return
-      }
-
-      //   x = separatorStore[i-1]['x']
-      // }else{
-      //   x = 0
-      // };
-
-
-
+        squareName =  i +'cropped.png'
+        crop.convertGrayscale(1)
+        crop.save('./crop/'+ squareName)
+      } else { return }
     }
-
-    // console.log(separatorStore)
-    // console.log(height)
-    im.save('./img-copy-processed.png')
-    console.log('Image saved as ko.jpg to local folder.png');
+    console.log(separatorStore)
+    console.log('Image saved as img-copy-processed.png to local folder');
   });
+
+  ////////////////////////////////////////////////////
+
+  const tesseractOptions = {
+    l: 'fra+eng',
+    psm: 5
+  }
+
+  console.log(separatorStore.length-3)
+
+  for (var i = 0; i < separatorStore.length-3; i++) {
+    var imgName = i+'cropped.png'
+    console.log(imgName)
+
+    tesseract.process(__dirname + '/crop/' + imgName, tesseractOptions, function(err, text)  {
+      if(err) {
+        console.error(err);
+      } else {
+        if(text){
+        console.log('book text is: ' + text);
+        }
+
+      }
+    });
+
+
+  }
+
 }
-
-////////////////////////////////////////////////////
-
-// const tesseractOptions = {
-//  l: 'fra',
-//  psm: 4
-// };
-
-// tesseract.process(__dirname + './regular2.png', tesseractOptions, function(err, text) {
-//  if(err) {
-//    console.error(err);
-//  } else {
-//    var logger = fs.createWriteStream(text+'.txt', {
-//        flags: 'a'
-//    })
-//    console.log(text);
-//    logger.write(text)
-//    logger.end()
-//  }
-// });

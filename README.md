@@ -20,4 +20,7 @@ rm -rf node_modules (yes, really D:)
 npm install opencv
 ```
 
-Run with `node t.js`
+Get options with `Tesseract --help`
+
+
+Run with `node --no-deprecation  --no-warnings t.js`
