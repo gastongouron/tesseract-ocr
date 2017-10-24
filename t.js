@@ -13,14 +13,14 @@ const RED   = [255, 0, 0];
 const lowThresh  = 0;
 const highThresh = 100;
 const iterations = 1;
-const minArea    = 10000;
+const minArea    = 2000;
 // const ratio      =3;
 // const kernel_size =3
 
 ////////////////////////////////////////////////////
 
 var img           = "regular.jpg"
-var img           = "input.jpg"
+// var img           = "input.jpg"
 var jimped        = "jimped-test.jpg"
 var processed     = "jimped-test-processed.jpg"
 var processedCopy = "jimped-test-processed-copy.jpg"
@@ -53,11 +53,11 @@ var startProcedure = function(){
     let test = im.copy()
 
     // Process i so it's BW
+    // gray.brightness(0.1, 0.1)
     gray.convertGrayscale()
     gray.canny(lowThresh, highThresh);
     test.canny(lowThresh, highThresh);
-    gray.dilate(1.1);
-    gray.brightness(0.3, 0.1)
+    gray.dilate(1.22);
 
     // Get contours of every object found in the image
     let contours = gray.findContours();
@@ -75,6 +75,7 @@ var startProcedure = function(){
       contours.approxPolyDP(i, 0.01 * arcLength, true);
 
       if(contours.cornerCount(i) < 100) {
+
         let rect = contours.minAreaRect(i);
 
         // console.log(contours.minAreaRect(i)['size'])
@@ -85,7 +86,7 @@ var startProcedure = function(){
         // if(area > 60000 && isNotTooBig){
         // if(isNotTooBig){
           for (let i = 0; i < 4; i++) {
-            gray.line([rect.points[i].x, rect.points[i].y], [rect.points[(i+1)%4].x, rect.points[(i+1)%4].y], RED, 3);
+            gray.line([rect.points[i].x, rect.points[i].y], [rect.points[(i+1)%4].x, rect.points[(i+1)%4].y], RED, 1);
           }
         // }
 
