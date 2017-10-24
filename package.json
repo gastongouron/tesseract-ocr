@@ -1,0 +1,25 @@
+{
+  "name": "pggo-tesseract",
+  "version": "1.0.0",
+  "description": "Recognize books on a bookshelf with tesseract",
+  "main": "t.js",
+  "scripts": {
+    "test": "node --no-deprecation --no-warnings t.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gastongouron/tesseract-ocr.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gastongouron/tesseract-ocr/issues"
+  },
+  "homepage": "https://github.com/gastongouron/tesseract-ocr#readme",
+  "dependencies": {
+    "easy-tesseract-ocr": "^1.2.2",
+    "fs": "0.0.1-security",
+    "jimp": "^0.2.28",
+    "opencv": "^6.0.0"
+  }
+}
