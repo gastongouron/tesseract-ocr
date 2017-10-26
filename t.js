@@ -7,13 +7,14 @@ const eto  = require('easy-tesseract-ocr');
 
 const WHITE = [255, 0, 255];
 const RED   = [255, 0, 0];
+const PURPL = [0, 255, 255];
 
 ////////////////////////////////////////////////////
 
 const lowThresh  = 0;
 const highThresh = 100;
 const iterations = 1;
-const minArea    = 2000;
+const minArea    = 1000;
 // const ratio      =3;
 // const kernel_size =3
 
@@ -53,14 +54,30 @@ var startProcedure = function(){
     let test = im.copy()
 
     // Process i so it's BW
-    // gray.brightness(0.1, 0.1)
     gray.convertGrayscale()
+    // test.convertGrayscale()
+
     gray.canny(lowThresh, highThresh);
     test.canny(lowThresh, highThresh);
     gray.dilate(1.22);
+    // test.dilate(1.22)
+
 
     // Get contours of every object found in the image
     let contours = gray.findContours();
+    // test.drawAllContours(contours, WHITE)
+
+    // let contours = test.findContours();
+    // let largestArea = 0;
+    // let largestAreaIndex;
+
+    // for (let i = 0; i < contours.size(); i++) {
+    //   if (contours.area(i) > largestArea) {
+    //     largestArea = contours.area(i);
+    //     test.drawContour(contours, i, PURPL, 1, 2);
+    //   }
+    // }
+
 
     console.log(gray.findContours.toString())
 
@@ -72,19 +89,25 @@ var startProcedure = function(){
 
       // Do magic with arcLength finding objects contours
       var arcLength = contours.arcLength(i, true);
-      contours.approxPolyDP(i, 0.01 * arcLength, true);
+      contours.approxPolyDP(i, 0.0001 * arcLength, true);
 
-      if(contours.cornerCount(i) < 100) {
+      if(contours.cornerCount(i) < 1000) {
 
         let rect = contours.minAreaRect(i);
 
         // console.log(contours.minAreaRect(i)['size'])
         // Check area size
-        let area = contours.minAreaRect(i)['size']['width'] * contours.minAreaRect(i)['size']['height']
-        let isNotTooBig = contours.minAreaRect(i)['size']['height'] < (height - 100)
+
+        // let rectWidth    = contours.minAreaRect(i)['size']['width']
+        // let rectHeight   = contours.minAreaRect(i)['size']['height']
+        // let area         = rectWidth * rectHeight
+        // let isNotTooHigh = rectHeight < (height - 100)
+        // let isNotTooWide = rectWidth < (width - (width/4))
+        // let isNotTooSmall= rectWidth > (width - (width/5))
+
         // let center = if rectangle is r: center: (r.x + r.width/2,  r.y+r.height/2)
-        // if(area > 60000 && isNotTooBig){
-        // if(isNotTooBig){
+        // if(isNotTooHigh && isNotTooWide && area > minArea){
+        // if((rectWidth < rectHeight)){
           for (let i = 0; i < 4; i++) {
             gray.line([rect.points[i].x, rect.points[i].y], [rect.points[(i+1)%4].x, rect.points[(i+1)%4].y], RED, 1);
           }
