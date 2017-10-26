@@ -29,3 +29,11 @@ Run with node options
 ```
 --no-deprecation --no-warnings t.js`
 ```
+
+Todo:
+
+http://coding-robin.de/2013/07/22/train-your-own-opencv-haar-classifier.html
+
+QA
+
+http://answers.opencv.org/question/177011/training-haar-classifier-to-detect-each-book-on-a-bookshelf/
